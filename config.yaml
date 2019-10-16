@@ -1,0 +1,13 @@
+url: 'https://learningcatalytics.com/sign_in'
+username: 'someone@example.com'
+password: 'password123'
+times:
+  -
+    day: MON
+    time: '9:40'
+  -
+    day: WED
+    time: '10:30'
+  -
+    day: FRI
+    time: '15:25'
