@@ -9,7 +9,11 @@ import json
 with open('config.yaml', 'r') as file:
 	config = yaml.safe_load(file)
 
+knowledge_base = {}
 browser = None  # webdriver.Firefox()
+
+
+def minify(string): return "".join(e for e in string if e.isalnum()).lower()
 
 
 def navigate_to_session():
@@ -29,11 +33,10 @@ def navigate_to_session():
 
 
 def find_answer_from_quizlet(url, question):
-	# TODO query a search engine and select the first URL
 	page = BeautifulSoup(requests.get(url).content, 'html.parser')
 	for el in page.select('.SetPageTerm-content'):
-		if question.lower() in el.get_text().lower():
-			print(el.select('*')[-1].get_text())
+		if minify(question) in minify(el.get_text()) and minify(question) not in knowledge_base:
+			knowledge_base[minify(question)] = minify(el.select('*')[-1].get_text())
 
 
 def get_search_results(question):
@@ -43,4 +46,10 @@ def get_search_results(question):
 
 
 # navigate_to_session()
-print(get_search_results('On Aug. 5, 2017, Venus is in Gemini from Earth. If you stand on Venus, which constellation is Earth in'))
+question = 'On Aug. 5, 2017, Venus is in Gemini from Earth. If you stand on Venus, which constellation is Earth in'
+answer = ""
+for url in get_search_results(question):
+	if minify(question) not in knowledge_base:
+		find_answer_from_quizlet(url, question)
+		print(knowledge_base)
+print(knowledge_base[minify(question)])
