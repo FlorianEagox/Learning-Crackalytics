@@ -4,6 +4,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import requests
+import json
 
 with open('config.yaml', 'r') as file:
 	config = yaml.safe_load(file)
@@ -27,15 +28,19 @@ def navigate_to_session():
 	browser.find_element_by_link_text("I can't find my seat").click()
 
 
-def find_answer_from_quizlet(question):
+def find_answer_from_quizlet(url, question):
 	# TODO query a search engine and select the first URL
-	url = 'https://quizlet.com/336326928/astro-midterm-3-clicker-qs-flash-cards/'
 	page = BeautifulSoup(requests.get(url).content, 'html.parser')
 	for el in page.select('.SetPageTerm-content'):
 		if question.lower() in el.get_text().lower():
 			print(el.select('*')[-1].get_text())
 
 
+def get_search_results(question):
+	querystring = {'cx': config['cse_cx'], "key": config['cse_key'], 'q': question}
+	results = json.loads(requests.request("GET", config['cse_request_url'], params=querystring).text)
+	return [item['link'] for item in results['items']]
+
+
 # navigate_to_session()
-find_answer_from_quizlet('On Aug. 5, 2017, Venus is in Gemini from Earth. If you stand on Venus, which constellation is Earth in')
-find_answer_from_quizlet('Which planets have NO moons?')
+print(get_search_results('On Aug. 5, 2017, Venus is in Gemini from Earth. If you stand on Venus, which constellation is Earth in'))

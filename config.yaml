@@ -1,6 +1,9 @@
 url: 'https://learningcatalytics.com/sign_in'
 username: 'someone@example.com'
 password: 'password123'
+cse_request_url: 'https://www.googleapis.com/customsearch/v1/'
+cse_cx: '009651248597238434110:rv56718xitr'
+cse_key: 'AIzaSyDO22ReOgKlXN-1xQ3Mg78fiKTi-AB7NEg'
 times:
   -
     day: MON
