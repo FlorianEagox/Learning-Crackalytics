@@ -1,13 +1,14 @@
 url: 'https://learningcatalytics.com/sign_in'
 username: 'someone@example.com'
 password: 'password123'
+geckodriver_path: 'geckodriver'
 cse_request_url: 'https://www.googleapis.com/customsearch/v1/'
 cse_cx: '009651248597238434110:rv56718xitr'
 cse_key: 'AIzaSyDO22ReOgKlXN-1xQ3Mg78fiKTi-AB7NEg'
 times:
   -
     day: MON
-    time: '9:40'
+    time: '09:40'
   -
     day: WED
     time: '10:30'
