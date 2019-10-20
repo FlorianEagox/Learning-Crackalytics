@@ -80,7 +80,7 @@ def ask_question(question):
 		return knowledge_base[found_answer[0]]
 	return found_answer
 
-navigate_session()
+
 for times in config['times']:
 	switch_dates[times['day']].at(times['time']).do(navigate_session)
 while True:
