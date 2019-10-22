@@ -6,13 +6,16 @@ import yaml
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-
-with open('config.yaml', 'r') as file:
-	config = yaml.safe_load(file)
+try:
+	with open('config.yaml', 'r') as file:
+		config = yaml.safe_load(file)
+except:
+	print("Config file config.yaml missing or damaged!")
+	exit()
 
 knowledge_base = {}
 switch_dates = {'MON': schedule.every().monday,
-				'TUE': schedule.every().monday,
+				'TUE': schedule.every().tuesday,
 				'WED': schedule.every().wednesday,
 				'THU': schedule.every().thursday,
 				'FRI': schedule.every().friday,
@@ -25,12 +28,17 @@ def minify(string): return ''.join(e for e in string if e.isalnum()).lower()
 
 def navigate_session():
 	refresh = 15
-	browser = webdriver.Firefox(executable_path=config['geckodriver_path'], keep_alive=False)
+	browser = webdriver.Firefox(executable_path=config['geckodriver_path'], keep_alive=True)
 	browser.get(config['url'])  # Open the Learning Catalytics Page
 	if browser.find_elements_by_id('user_username') and browser.find_elements_by_id('user_password'):
 		browser.find_element_by_id('user_username').send_keys(config['username'])
 		browser.find_element_by_id('user_password').send_keys(config['password'] + Keys.RETURN)
+		time.sleep(3)
+		if browser.find_elements_by_id("alert-text"):
+			print("you've given the wrong login in your config file!")
+			exit()
 	session_active = True
+	answered = False
 	while session_active:
 		if browser.current_url.split('/')[-1] == 'class_sessions':
 			# Select the current session
@@ -43,13 +51,16 @@ def navigate_session():
 		elif browser.current_url.split('/')[-1] == 'select_seat':
 			browser.find_element_by_link_text("I can't find my seat").click()
 		elif browser.current_url.split('/')[-1].isnumeric():
-			if browser.find_elements_by_id('responses'):
+			if browser.find_elements_by_id('responses') and not answered:
 				question = browser.find_element_by_css_selector('.item_prompt_container label').text
 				answer = ask_question(question)
 				print(answer)
 				for choice in browser.find_elements_by_css_selector('.multiplechoice p'):
 					if minify(choice.text) in answer or answer in minify(choice.text):
 						choice.click()
+						answered = True
+			elif browser.find_elements_by_class_name(".bar_graph"):
+				answered = False
 			else:
 				print('waiting for question')
 		elif browser.current_url.split('/')[-1] == 'post_session':
@@ -80,9 +91,10 @@ def ask_question(question):
 		return knowledge_base[found_answer[0]]
 	return found_answer
 
-navigate_session()
+
 for times in config['times']:
 	switch_dates[times['day']].at(times['time']).do(navigate_session)
+navigate_session()
 while True:
 	schedule.run_pending()
-	time.sleep(1)
+	time.sleep(10)
