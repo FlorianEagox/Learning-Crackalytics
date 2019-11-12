@@ -38,8 +38,8 @@ def navigate_session():
 			print("you've given the wrong login in your config file!")
 			exit()
 	session_active = True
-	answered = False
 	while session_active:
+		question_answered = False
 		if browser.current_url.split('/')[-1] == 'class_sessions':
 			# Select the current session
 			sessions = browser.find_elements_by_css_selector('.join_class_session_link')
@@ -51,21 +51,25 @@ def navigate_session():
 		elif browser.current_url.split('/')[-1] == 'select_seat':
 			browser.find_element_by_link_text("I can't find my seat").click()
 		elif browser.current_url.split('/')[-1].isnumeric():
-			if browser.find_elements_by_id('responses') and not answered:
+			if browser.find_elements_by_id('responses') and not browser.find_elements_by_id("why_hide_response") and not question_answered:
 				question = browser.find_element_by_css_selector('.item_prompt_container label').text
 				answer = ask_question(question)
 				print(answer)
 				for choice in browser.find_elements_by_css_selector('.multiplechoice p'):
 					if minify(choice.text) in answer or answer in minify(choice.text):
 						choice.click()
-						answered = True
-			elif browser.find_elements_by_class_name(".bar_graph"):
-				answered = False
+						question_answered = True
+				if not question_answered:
+					print("correct answer not found, choosing the first one")
+					browser.find_element_by_css_selector('.multiplechoice p').click()
+					question_answered = True
 			else:
 				print('waiting for question')
+				question_answered = False
 		elif browser.current_url.split('/')[-1] == 'post_session':
 			session_active = False
 			print(browser.find_element_by_id('score_summary').text)
+			browser.close()
 		time.sleep(refresh)
 
 
